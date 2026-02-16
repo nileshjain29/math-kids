@@ -107,6 +107,30 @@ body {
   max-width: 180px;
 }
 
+.btn-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.1s,
+    filter 0.15s;
+  flex-shrink: 0;
+}
+.btn-close:active {
+  transform: scale(0.9);
+  filter: brightness(0.85);
+}
+
 .btn-check {
   margin-top: 14px;
   max-width: 260px;

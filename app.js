@@ -328,6 +328,16 @@ function goTo(screen) {
   if (screen === "welcome") drawBannerStars();
 }
 
+function quitRound() {
+  soundClick();
+  if (currentQ > 0 && score > 0) {
+    showResults();
+  } else {
+    showScreen("welcome");
+    drawBannerStars();
+  }
+}
+
 function selectOperation(op) {
   soundClick();
   operation = op;
