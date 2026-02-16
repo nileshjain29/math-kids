@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Math Kids" />
+    <meta name="theme-color" content="#4A90D9" />
+    <title>Math Kids</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Welcome Screen -->
+      <div id="screen-welcome" class="screen active">
+        <canvas id="star-banner" width="350" height="40"></canvas>
+        <h1 class="title">Math Kids</h1>
+        <p class="subtitle">Fun math practice for young learners!</p>
+        <div class="btn-group">
+          <button class="btn btn-add" onclick="selectOperation('add')">
+            +&ensp;Addition
+          </button>
+          <button class="btn btn-sub" onclick="selectOperation('subtract')">
+            &minus;&ensp;Subtraction
+          </button>
+          <button class="btn btn-mul" onclick="selectOperation('multiply')">
+            &times;&ensp;Multiplication
+          </button>
+        </div>
+      </div>
+
+      <!-- Digit Level Screen -->
+      <div id="screen-level" class="screen">
+        <h1 id="level-title" class="title">Addition</h1>
+        <p class="subtitle">Choose a difficulty level</p>
+        <div class="btn-group">
+          <button class="btn" id="lvl1" onclick="selectLevel(1)">
+            Single digit&ensp;(1 – 9)
+          </button>
+          <button class="btn" id="lvl2" onclick="selectLevel(2)">
+            Double digit&ensp;(10 – 99)
+          </button>
+          <button class="btn" id="lvl3" onclick="selectLevel(3)">
+            Triple digit&ensp;(100 – 999)
+          </button>
+        </div>
+        <button class="btn btn-back" onclick="goTo('welcome')">Back</button>
+      </div>
+
+      <!-- Number of Questions Screen -->
+      <div id="screen-count" class="screen">
+        <h1 class="title">How many problems?</h1>
+        <p class="subtitle">Pick the number of questions</p>
+        <div class="btn-group">
+          <button class="btn" id="cnt5" onclick="selectCount(5)">
+            5 problems
+          </button>
+          <button class="btn" id="cnt10" onclick="selectCount(10)">
+            10 problems
+          </button>
+          <button class="btn" id="cnt15" onclick="selectCount(15)">
+            15 problems
+          </button>
+        </div>
+        <button class="btn btn-back" onclick="goTo('level')">Back</button>
+      </div>
+
+      <!-- Problem Screen -->
+      <div id="screen-problem" class="screen">
+        <div class="top-bar">
+          <span id="progress-text">Problem 1 of 5</span>
+          <span id="score-text">Score: 0</span>
+        </div>
+        <div class="progress-track">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+
+        <div class="board" id="problem-board">
+          <div class="num-row num-a" id="num-a">45</div>
+          <div class="op-row">
+            <span class="operator" id="op-symbol">+</span>
+            <span class="num-b" id="num-b">23</span>
+          </div>
+          <div class="board-line"></div>
+          <input
+            type="number"
+            id="answer-input"
+            class="answer-input"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            autocomplete="off"
+          />
+        </div>
+
+        <button class="btn btn-check" id="btn-check" onclick="checkAnswer()">
+          Check Answer
+        </button>
+
+        <div id="feedback" class="feedback"></div>
+        <div id="emoji-pop" class="emoji-pop"></div>
+        <div id="streak-badge" class="streak-badge hidden"></div>
+        <div id="hint" class="hint"></div>
+        <div id="attempts-left" class="attempts-left">Attempts left: 3</div>
+
+        <button
+          class="btn btn-next hidden"
+          id="btn-next"
+          onclick="nextProblem()"
+        >
+          Next Problem &raquo;
+        </button>
+      </div>
+
+      <!-- Confetti / particle canvas (overlays entire screen) -->
+      <canvas id="confetti-canvas"></canvas>
+
+      <!-- Results Screen -->
+      <div id="screen-results" class="screen">
+        <canvas id="result-stars" width="300" height="60"></canvas>
+        <h1 class="title">Round Complete!</h1>
+        <p class="score-big" id="final-score">You scored 4 out of 5</p>
+        <p class="result-msg" id="result-msg">Great job!</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="goTo('welcome')">
+            Play Again
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
