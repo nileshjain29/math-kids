@@ -14,6 +14,8 @@ let numA = 0,
   numB = 0,
   correctAnswer = 0;
 let streak = 0; // consecutive correct answers
+let playerAge = 8; // default age
+let customRange = null; // null = use default, or [lo, hi]
 
 // ─── Sound Effects (Web Audio API – no files needed) ────────────────────────
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -218,6 +220,7 @@ function opLabel(op) {
 }
 
 function range(dc) {
+  if (customRange) return customRange;
   if (dc === 1) return [1, 9];
   if (dc === 2) return [10, 99];
   return [100, 999];
@@ -338,17 +341,72 @@ function quitRound() {
   }
 }
 
+function selectAge(age) {
+  soundClick();
+  playerAge = age;
+  showScreen("operation");
+}
+
 function selectOperation(op) {
   soundClick();
   operation = op;
   app.dataset.op = op;
   levelTitle.textContent = opLabel(op);
+  // Hide triple digit for age <= 5
+  const lvl3Btn = document.getElementById("lvl3");
+  if (playerAge <= 5) {
+    lvl3Btn.classList.add("hidden");
+  } else {
+    lvl3Btn.classList.remove("hidden");
+  }
   showScreen("level");
 }
 
 function selectLevel(lvl) {
   soundClick();
   digitChoice = lvl;
+  customRange = null;
+  // If age <= 5 and double digit, show range picker
+  if (playerAge <= 5 && lvl === 2) {
+    showRangePicker();
+  } else {
+    showScreen("count");
+  }
+}
+
+function showRangePicker() {
+  const opColor = { add: "#27AE60", subtract: "#E74C3C", multiply: "#8E44AD" }[
+    operation
+  ];
+  document.getElementById("range-title").textContent =
+    opLabel(operation) + " Range";
+  const container = document.getElementById("range-buttons");
+  container.innerHTML = "";
+  const ranges = [
+    [10, 20],
+    [20, 30],
+    [30, 40],
+    [40, 50],
+    [50, 60],
+    [60, 70],
+    [70, 80],
+    [80, 90],
+    [90, 99],
+  ];
+  ranges.forEach(([lo, hi]) => {
+    const btn = document.createElement("button");
+    btn.className = "btn";
+    btn.style.background = opColor;
+    btn.textContent = `${lo} \u2013 ${hi}`;
+    btn.onclick = () => selectRange(lo, hi);
+    container.appendChild(btn);
+  });
+  showScreen("range");
+}
+
+function selectRange(lo, hi) {
+  soundClick();
+  customRange = [lo, hi];
   showScreen("count");
 }
 
@@ -359,6 +417,15 @@ function selectCount(n) {
   score = 0;
   streak = 0;
   nextProblem();
+}
+
+function goBackFromCount() {
+  soundClick();
+  if (playerAge <= 5 && digitChoice === 2) {
+    showRangePicker();
+  } else {
+    showScreen("level");
+  }
 }
 
 // ─── Problem flow ───────────────────────────────────────────────────────────
@@ -396,6 +463,10 @@ function renderProblem() {
 
   // Focus after a tiny delay so virtual keyboard opens on mobile
   setTimeout(() => answerInput.focus(), 80);
+
+  // Reset scratchpad for new problem
+  clearScratchpad();
+  initScratchpad();
 }
 
 // ─── Answer check ───────────────────────────────────────────────────────────
@@ -512,6 +583,85 @@ function showResults() {
 
   resultMsgEl.textContent = msg;
   resultMsgEl.className = `result-msg ${cls}`;
+}
+
+// ─── Scratchpad (finger drawing) ────────────────────────────────────────────
+let spCanvas,
+  spCtx,
+  spDrawing = false,
+  spTool = "pen";
+
+function initScratchpad() {
+  spCanvas = document.getElementById("scratchpad");
+  if (!spCanvas) return;
+  spCtx = spCanvas.getContext("2d");
+
+  // Set canvas resolution to match display size
+  const rect = spCanvas.getBoundingClientRect();
+  spCanvas.width = rect.width * (window.devicePixelRatio || 1);
+  spCanvas.height = rect.height * (window.devicePixelRatio || 1);
+  spCtx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+
+  // Remove old listeners (avoid duplicates)
+  spCanvas.onpointerdown = spStart;
+  spCanvas.onpointermove = spMove;
+  spCanvas.onpointerup = spEnd;
+  spCanvas.onpointercancel = spEnd;
+  spCanvas.onpointerleave = spEnd;
+}
+
+function spPos(e) {
+  const rect = spCanvas.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function spStart(e) {
+  e.preventDefault();
+  spDrawing = true;
+  spCanvas.setPointerCapture(e.pointerId);
+  const p = spPos(e);
+  spCtx.beginPath();
+  spCtx.moveTo(p.x, p.y);
+}
+
+function spMove(e) {
+  if (!spDrawing) return;
+  e.preventDefault();
+  const p = spPos(e);
+  if (spTool === "eraser") {
+    spCtx.globalCompositeOperation = "destination-out";
+    spCtx.lineWidth = 28;
+  } else {
+    spCtx.globalCompositeOperation = "source-over";
+    spCtx.lineWidth = 3;
+  }
+  spCtx.strokeStyle = "#2C3E50";
+  spCtx.lineCap = "round";
+  spCtx.lineJoin = "round";
+  spCtx.lineTo(p.x, p.y);
+  spCtx.stroke();
+}
+
+function spEnd(e) {
+  spDrawing = false;
+  spCtx.globalCompositeOperation = "source-over";
+}
+
+function setScratchTool(tool) {
+  spTool = tool;
+  document.getElementById("sp-pen").classList.toggle("active", tool === "pen");
+  document
+    .getElementById("sp-eraser")
+    .classList.toggle("active", tool === "eraser");
+  soundClick();
+}
+
+function clearScratchpad() {
+  const canvas = document.getElementById("scratchpad");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  soundClick();
 }
 
 // ─── Init ───────────────────────────────────────────────────────────────────

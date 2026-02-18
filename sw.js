@@ -1,4 +1,4 @@
-const CACHE_NAME = "mathkids-v2";
+const CACHE_NAME = "mathkids-v6";
 const ASSETS = [
   ".",
   "index.html",

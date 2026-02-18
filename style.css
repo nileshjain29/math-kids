@@ -159,6 +159,10 @@ body {
 [data-op="add"] #cnt5,
 [data-op="add"] #cnt10,
 [data-op="add"] #cnt15,
+[data-op="add"] #age5,
+[data-op="add"] #age6,
+[data-op="add"] #age7,
+[data-op="add"] #age8,
 [data-op="add"] #score-text {
   color: #fff;
   background: #27ae60;
@@ -172,6 +176,10 @@ body {
 [data-op="subtract"] #cnt5,
 [data-op="subtract"] #cnt10,
 [data-op="subtract"] #cnt15,
+[data-op="subtract"] #age5,
+[data-op="subtract"] #age6,
+[data-op="subtract"] #age7,
+[data-op="subtract"] #age8,
 [data-op="subtract"] #score-text {
   color: #fff;
   background: #e74c3c;
@@ -185,6 +193,10 @@ body {
 [data-op="multiply"] #cnt5,
 [data-op="multiply"] #cnt10,
 [data-op="multiply"] #cnt15,
+[data-op="multiply"] #age5,
+[data-op="multiply"] #age6,
+[data-op="multiply"] #age7,
+[data-op="multiply"] #age8,
 [data-op="multiply"] #score-text {
   color: #fff;
   background: #8e44ad;
@@ -205,13 +217,19 @@ body {
   color: #8e44ad;
 }
 
-[data-op="add"] #level-title {
+[data-op="add"] #level-title,
+[data-op="add"] #age-title,
+[data-op="add"] #range-title {
   color: #27ae60;
 }
-[data-op="subtract"] #level-title {
+[data-op="subtract"] #level-title,
+[data-op="subtract"] #age-title,
+[data-op="subtract"] #range-title {
   color: #e74c3c;
 }
-[data-op="multiply"] #level-title {
+[data-op="multiply"] #level-title,
+[data-op="multiply"] #age-title,
+[data-op="multiply"] #range-title {
   color: #8e44ad;
 }
 
@@ -408,6 +426,84 @@ body {
   }
   .board {
     padding: 18px 22px 14px;
+  }
+}
+
+/* ─── Scratchpad ──────────────────────────────────────────────────────────── */
+.scratchpad-wrapper {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 14px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid #d5dde8;
+  background: #fff;
+}
+
+.scratchpad-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: #eef2fa;
+  border-bottom: 1px solid #d5dde8;
+}
+
+.scratchpad-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #7f8c8d;
+  letter-spacing: 0.03em;
+}
+
+.scratchpad-tools {
+  display: flex;
+  gap: 6px;
+}
+
+.sp-btn {
+  width: 34px;
+  height: 34px;
+  border: 2px solid #d5dde8;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  padding: 0;
+}
+.sp-btn:active {
+  transform: scale(0.92);
+}
+.sp-btn.active {
+  background: #4a90d9;
+  border-color: #4a90d9;
+}
+.sp-clear {
+  background: #fff3e0;
+  border-color: #f39c12;
+}
+.sp-clear:active {
+  background: #f39c12;
+}
+
+.scratchpad-canvas {
+  display: block;
+  width: 100%;
+  height: 160px;
+  cursor: crosshair;
+  touch-action: none;
+  background: #fff;
+}
+
+@media (max-width: 380px) {
+  .scratchpad-canvas {
+    height: 130px;
   }
 }
 

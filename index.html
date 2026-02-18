@@ -17,11 +17,25 @@
   </head>
   <body>
     <div id="app">
-      <!-- Welcome Screen -->
+      <!-- Welcome Screen (Age Selection) -->
       <div id="screen-welcome" class="screen active">
         <canvas id="star-banner" width="350" height="40"></canvas>
         <h1 class="title">Math Kids</h1>
-        <p class="subtitle">Fun math practice for young learners!</p>
+        <p class="subtitle">How old are you?</p>
+        <div class="btn-group">
+          <button class="btn" id="age5" onclick="selectAge(5)">
+            5 years or under
+          </button>
+          <button class="btn" id="age6" onclick="selectAge(6)">6 years</button>
+          <button class="btn" id="age7" onclick="selectAge(7)">7 years</button>
+          <button class="btn" id="age8" onclick="selectAge(8)">8 years</button>
+        </div>
+      </div>
+
+      <!-- Operation Screen -->
+      <div id="screen-operation" class="screen">
+        <h1 class="title">What do you want to practice?</h1>
+        <p class="subtitle">Pick an operation</p>
         <div class="btn-group">
           <button class="btn btn-add" onclick="selectOperation('add')">
             +&ensp;Addition
@@ -33,6 +47,7 @@
             &times;&ensp;Multiplication
           </button>
         </div>
+        <button class="btn btn-back" onclick="goTo('welcome')">Back</button>
       </div>
 
       <!-- Digit Level Screen -->
@@ -50,7 +65,15 @@
             Triple digit&ensp;(100 – 999)
           </button>
         </div>
-        <button class="btn btn-back" onclick="goTo('welcome')">Back</button>
+        <button class="btn btn-back" onclick="goTo('operation')">Back</button>
+      </div>
+
+      <!-- Range Picker Screen (age <= 5, double digit only) -->
+      <div id="screen-range" class="screen">
+        <h1 class="title" id="range-title">Pick a Range</h1>
+        <p class="subtitle">Choose the number range</p>
+        <div class="btn-group" id="range-buttons"></div>
+        <button class="btn btn-back" onclick="goTo('level')">Back</button>
       </div>
 
       <!-- Number of Questions Screen -->
@@ -68,7 +91,7 @@
             15 problems
           </button>
         </div>
-        <button class="btn btn-back" onclick="goTo('level')">Back</button>
+        <button class="btn btn-back" onclick="goBackFromCount()">Back</button>
       </div>
 
       <!-- Problem Screen -->
@@ -104,6 +127,39 @@
         <button class="btn btn-check" id="btn-check" onclick="checkAnswer()">
           Check Answer
         </button>
+
+        <!-- Scratchpad for rough work -->
+        <div class="scratchpad-wrapper">
+          <div class="scratchpad-header">
+            <span class="scratchpad-title">Rough Work</span>
+            <div class="scratchpad-tools">
+              <button
+                class="sp-btn sp-pen active"
+                id="sp-pen"
+                onclick="setScratchTool('pen')"
+                title="Pen"
+              >
+                &#9999;&#65039;
+              </button>
+              <button
+                class="sp-btn sp-eraser"
+                id="sp-eraser"
+                onclick="setScratchTool('eraser')"
+                title="Eraser"
+              >
+                &#128999;
+              </button>
+              <button
+                class="sp-btn sp-clear"
+                onclick="clearScratchpad()"
+                title="Clear All"
+              >
+                &#128465;
+              </button>
+            </div>
+          </div>
+          <canvas id="scratchpad" class="scratchpad-canvas"></canvas>
+        </div>
 
         <div id="feedback" class="feedback"></div>
         <div id="emoji-pop" class="emoji-pop"></div>
