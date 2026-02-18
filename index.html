@@ -14,6 +14,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="learn.css" />
   </head>
   <body>
     <div id="app">
@@ -32,6 +33,23 @@
         </div>
       </div>
 
+      <!-- Mode Selection (Practice vs Learn) -->
+      <div id="screen-mode" class="screen">
+        <h1 class="title">What would you like to do?</h1>
+        <p class="subtitle">Choose a mode</p>
+        <div class="btn-group">
+          <button class="btn btn-practice" onclick="goTo('operation')">
+            <div class="mode-icon">🎯</div>
+            Practice
+          </button>
+          <button class="btn btn-learn" onclick="goTo('learn-menu')">
+            <div class="mode-icon">📚</div>
+            Learn How
+          </button>
+        </div>
+        <button class="btn btn-back" onclick="goTo('welcome')">Back</button>
+      </div>
+
       <!-- Operation Screen -->
       <div id="screen-operation" class="screen">
         <h1 class="title">What do you want to practice?</h1>
@@ -47,7 +65,7 @@
             &times;&ensp;Multiplication
           </button>
         </div>
-        <button class="btn btn-back" onclick="goTo('welcome')">Back</button>
+        <button class="btn btn-back" onclick="goTo('mode')">Back</button>
       </div>
 
       <!-- Digit Level Screen -->
@@ -179,6 +197,54 @@
       <!-- Confetti / particle canvas (overlays entire screen) -->
       <canvas id="confetti-canvas"></canvas>
 
+      <!-- Learn Topic Menu -->
+      <div id="screen-learn-menu" class="screen">
+        <h1 class="title">What do you want to learn?</h1>
+        <p class="subtitle">Pick a topic</p>
+        <div class="btn-group">
+          <button class="btn btn-add" onclick="startLearnMode('add')">
+            ➕&ensp;How to Carry&ensp;(Addition)
+          </button>
+          <button class="btn btn-sub" onclick="startLearnMode('subtract')">
+            &minus;&ensp;How to Borrow&ensp;(Subtraction)
+          </button>
+          <button class="btn btn-mul" onclick="startLearnMode('multiply')">
+            &times;&ensp;Groups &amp; Tricks&ensp;(Multiplication)
+          </button>
+        </div>
+        <button class="btn btn-back" onclick="goTo('mode')">Back</button>
+      </div>
+
+      <!-- Learn Workspace -->
+      <div id="screen-learn" class="screen">
+        <div class="learn-top-bar">
+          <span id="learn-progress">Step 1 of 6</span>
+          <button class="btn-close" onclick="exitLearn()" title="Exit">
+            &times;
+          </button>
+        </div>
+        <div class="learn-progress-track">
+          <div id="learn-progress-fill" class="learn-progress-fill"></div>
+        </div>
+        <div id="learn-workspace" class="learn-workspace"></div>
+        <div class="learn-nav">
+          <button
+            class="btn learn-prev"
+            id="learn-prev"
+            onclick="prevLearnStep()"
+          >
+            ← Back
+          </button>
+          <button
+            class="btn learn-next"
+            id="learn-next"
+            onclick="nextLearnStep()"
+          >
+            Next →
+          </button>
+        </div>
+      </div>
+
       <!-- Results Screen -->
       <div id="screen-results" class="screen">
         <canvas id="result-stars" width="300" height="60"></canvas>
@@ -194,5 +260,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="learn.js"></script>
   </body>
 </html>

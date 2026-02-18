@@ -344,7 +344,7 @@ function quitRound() {
 function selectAge(age) {
   soundClick();
   playerAge = age;
-  showScreen("operation");
+  showScreen("mode");
 }
 
 function selectOperation(op) {

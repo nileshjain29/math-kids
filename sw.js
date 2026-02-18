@@ -1,9 +1,11 @@
-const CACHE_NAME = "mathkids-v6";
+const CACHE_NAME = "mathkids-v7";
 const ASSETS = [
   ".",
   "index.html",
   "style.css",
+  "learn.css",
   "app.js",
+  "learn.js",
   "manifest.json",
   "icon-192.png",
   "icon-512.png",
