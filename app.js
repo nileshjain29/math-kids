@@ -503,12 +503,13 @@ function checkAnswer() {
     attemptsEl.textContent = "";
     answerInput.disabled = true;
     btnCheck.disabled = true;
-    btnNext.classList.remove("hidden");
     scoreText.textContent = `Score: ${score}`;
     // Bounce the board
     const board = document.getElementById("problem-board");
     board.classList.add("board-correct");
     setTimeout(() => board.classList.remove("board-correct"), 600);
+    // Auto-advance to next problem after a short delay
+    setTimeout(() => nextProblem(), 1500);
   } else {
     updateStreak(false);
     soundWrong();
