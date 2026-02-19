@@ -97,6 +97,9 @@ body {
 .btn-mul {
   background: #8e44ad;
 }
+.btn-div {
+  background: #e67e22;
+}
 .btn-primary {
   background: #4a90d9;
 }
@@ -215,6 +218,32 @@ body {
 }
 [data-op="multiply"] #score-text {
   color: #8e44ad;
+}
+
+[data-op="divide"] .btn-check,
+[data-op="divide"] .btn-next,
+[data-op="divide"] #lvl1,
+[data-op="divide"] #lvl2,
+[data-op="divide"] #lvl3,
+[data-op="divide"] #cnt5,
+[data-op="divide"] #cnt10,
+[data-op="divide"] #cnt15,
+[data-op="divide"] #age5,
+[data-op="divide"] #age6,
+[data-op="divide"] #age7,
+[data-op="divide"] #age8,
+[data-op="divide"] #score-text {
+  color: #fff;
+  background: #e67e22;
+}
+[data-op="divide"] #score-text {
+  background: none !important;
+  color: #e67e22;
+}
+[data-op="divide"] #level-title,
+[data-op="divide"] #age-title,
+[data-op="divide"] #range-title {
+  color: #e67e22;
 }
 
 [data-op="add"] #level-title,
@@ -654,7 +683,8 @@ body {
 /* ─── Button Hover Wiggle (fun for kids) ──────────────────────────────────── */
 .btn-add:hover,
 .btn-sub:hover,
-.btn-mul:hover {
+.btn-mul:hover,
+.btn-div:hover {
   animation: wiggle 0.4s ease;
 }
 @keyframes wiggle {

@@ -686,3 +686,492 @@
     padding: 8px 10px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Times Tables – Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Tables Grid (1–20) ──────────────────────────────────────────────────── */
+.btn-tables {
+  background: #ff6f00 !important;
+  font-size: 1.2rem;
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin: 16px auto 20px;
+}
+.btn-table {
+  width: 100%;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+.btn-table:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.btn-table:active {
+  transform: scale(0.95);
+}
+
+/* ─── Table Display ────────────────────────────────────────────────────────── */
+.table-display {
+  width: 100%;
+  max-width: 340px;
+  margin: 8px auto 0;
+}
+.table-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin: 4px 0;
+  background: #fff;
+  border-radius: 12px;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.table-row:nth-child(even) {
+  background: #f7f9fc;
+}
+.fade-row {
+  animation: fadeSlideIn 0.35s ease both;
+}
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.table-n {
+  min-width: 36px;
+  text-align: right;
+  font-weight: 800;
+}
+.table-x {
+  color: #7f8c8d;
+}
+.table-m {
+  min-width: 28px;
+  text-align: center;
+}
+.table-eq {
+  color: #7f8c8d;
+}
+.table-ans {
+  min-width: 44px;
+  text-align: left;
+  font-weight: 800;
+  font-size: 1.4rem;
+}
+
+/* ─── Table Actions ────────────────────────────────────────────────────────── */
+.table-actions {
+  margin: 16px 0 8px;
+  text-align: center;
+}
+.btn-quiz {
+  background: #8e44ad !important;
+  font-size: 1.15rem !important;
+  padding: 12px 32px !important;
+  border-radius: 14px !important;
+}
+.btn-study {
+  background: #3498db !important;
+  font-size: 1.05rem !important;
+  padding: 12px 24px !important;
+  border-radius: 14px !important;
+}
+
+/* ─── Quiz Area ────────────────────────────────────────────────────────────── */
+.table-quiz-area {
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.quiz-progress-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.quiz-progress-track {
+  flex: 1;
+  height: 10px;
+  background: #d5dde8;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.quiz-progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+.quiz-progress-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #7f8c8d;
+  white-space: nowrap;
+}
+.quiz-score-row {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.quiz-problem-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fff;
+  border: 2px solid #d5dde8;
+  border-radius: 18px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 2rem;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.quiz-n {
+  font-weight: 800;
+}
+.quiz-x {
+  color: #7f8c8d;
+  font-size: 1.6rem;
+}
+.quiz-m {
+  min-width: 40px;
+  text-align: center;
+}
+.quiz-eq {
+  color: #7f8c8d;
+  font-size: 1.6rem;
+}
+.quiz-input {
+  width: 90px;
+  height: 56px;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 1.8rem;
+  font-weight: 800;
+  text-align: center;
+  border: 3px solid #d5dde8;
+  border-radius: 14px;
+  outline: none;
+  background: #f7f9fc;
+  color: #2c3e50;
+  -moz-appearance: textfield;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.quiz-input:focus {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.25);
+  background: #fff;
+}
+.quiz-input::-webkit-inner-spin-button,
+.quiz-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.quiz-input:disabled {
+  opacity: 0.5;
+}
+
+.quiz-check-btn {
+  min-width: 160px;
+  margin-bottom: 10px;
+}
+.quiz-check-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quiz-feedback {
+  min-height: 1.6em;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Shake animation for wrong answer */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
+}
+.shake {
+  animation: shake 0.35s ease;
+}
+
+/* ─── Quiz Results ─────────────────────────────────────────────────────────── */
+.quiz-results {
+  text-align: center;
+  padding: 20px 0;
+}
+.quiz-stars {
+  font-size: 2.4rem;
+  letter-spacing: 6px;
+  margin-bottom: 8px;
+}
+.quiz-score-big {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.quiz-msg {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+.quiz-result-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ─── Responsive (tables) ──────────────────────────────────────────────────── */
+@media (max-width: 380px) {
+  .tables-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .btn-table {
+    font-size: 1.2rem;
+    border-radius: 10px;
+  }
+  .table-row {
+    font-size: 1.1rem;
+    padding: 8px 12px;
+  }
+  .table-ans {
+    font-size: 1.2rem;
+  }
+  .quiz-problem-card {
+    font-size: 1.6rem;
+    padding: 16px 18px;
+  }
+  .quiz-input {
+    width: 72px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Division Lesson – Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Pile of items ────────────────────────────────────────────────────────── */
+.div-pile {
+  text-align: center;
+  margin: 8px 0;
+  width: 100%;
+  max-width: 380px;
+}
+.pile-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 6px;
+}
+.pile-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  padding: 8px;
+  background: #fff3e0;
+  border-radius: 14px;
+  border: 2px dashed #e67e22;
+  min-height: 36px;
+}
+.pile-item {
+  font-size: 1.3rem;
+  transition: all 0.3s ease;
+}
+.pile-item.pile-given {
+  opacity: 0.2;
+  transform: scale(0.7);
+}
+.mini-pile {
+  font-size: 1rem;
+}
+
+/* ─── Plates (sharing targets) ─────────────────────────────────────────────── */
+.div-plates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 12px 0;
+  width: 100%;
+  max-width: 400px;
+}
+.div-plate {
+  border: 3px solid #3498db;
+  border-radius: 16px;
+  padding: 8px 10px 4px;
+  background: #fff;
+  text-align: center;
+  min-width: 60px;
+  min-height: 50px;
+  transition: all 0.3s ease;
+}
+.plate-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: center;
+  margin-bottom: 4px;
+  min-height: 24px;
+}
+.plate-item {
+  font-size: 1.1rem;
+}
+.appear-item {
+  animation: groupAppear 0.3s ease;
+}
+.plate-count {
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+/* ─── Connection / Trick visuals ───────────────────────────────────────────── */
+.div-connection-box {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2c3e50;
+  background: #fff3e0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-top: 8px;
+}
+.div-trick-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+.trick-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.trick-mul {
+  color: #8e44ad;
+  background: #f3e5f5;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.trick-div {
+  color: #e67e22;
+  background: #fff3e0;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.trick-arrow {
+  color: #7f8c8d;
+  font-size: 1.2rem;
+}
+.div-think-bubble {
+  text-align: center;
+  background: #e8f4fd;
+  border: 2px solid #3498db;
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #2c3e50;
+  line-height: 1.6;
+}
+
+/* ─── Try-it visual ────────────────────────────────────────────────────────── */
+.div-try-visual {
+  text-align: center;
+  width: 100%;
+  max-width: 380px;
+}
+.div-try-pile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: center;
+  padding: 8px;
+  background: #fff3e0;
+  border-radius: 12px;
+  border: 2px dashed #e67e22;
+  margin-bottom: 8px;
+}
+.div-try-hint-text {
+  font-size: 0.95rem;
+  color: #555;
+  font-weight: 600;
+}
+
+/* ─── Responsive (division) ────────────────────────────────────────────────── */
+@media (max-width: 380px) {
+  .pile-item {
+    font-size: 1rem;
+  }
+  .div-plate {
+    min-width: 50px;
+    padding: 6px 8px 3px;
+  }
+  .plate-item {
+    font-size: 0.9rem;
+  }
+  .trick-row {
+    font-size: 0.95rem;
+  }
+  .div-think-bubble {
+    font-size: 0.95rem;
+    padding: 8px 12px;
+  }
+}

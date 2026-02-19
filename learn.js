@@ -17,9 +17,10 @@ const LEARN_COLORS = {
   add: "#27AE60",
   subtract: "#E74C3C",
   multiply: "#8E44AD",
+  divide: "#E67E22",
 };
-const LEARN_EMOJI = { add: "➕", subtract: "➖", multiply: "✖️" };
-const OP_CHAR = { add: "+", subtract: "−", multiply: "×" };
+const LEARN_EMOJI = { add: "➕", subtract: "➖", multiply: "✖️", divide: "➗" };
+const OP_CHAR = { add: "+", subtract: "−", multiply: "×", divide: "÷" };
 
 // ─── Entry & Navigation ─────────────────────────────────────────────────────
 
@@ -36,6 +37,9 @@ function startLearnMode(op) {
       break;
     case "multiply":
       learnSteps = buildMultiplicationLesson();
+      break;
+    case "divide":
+      learnSteps = buildDivisionLesson();
       break;
   }
   document.getElementById("learn-progress-fill").style.background =
@@ -186,10 +190,10 @@ function renderAddDemo(ws, a, b) {
   for (let c = cols - 1; c >= 0; c--) {
     const ad = data.aDigits[c],
       bd = data.bDigits[c];
-    const carry = c < cols - 1 ? data.carries[c + 1] : 0;
+    const carry = data.carries[c] || 0;
     const sum = ad + bd + carry;
     const ansDigit = data.ansDigits[c];
-    const newCarry = data.carries[c];
+    const newCarry = c > 0 ? data.carries[c - 1] : 0;
     const colLabel =
       c === cols - 1 ? "ones" : c === cols - 2 ? "tens" : "hundreds";
 
@@ -208,7 +212,7 @@ function renderAddDemo(ws, a, b) {
     // Show result
     subs.push(() => {
       setAnswerDigit(ws, c, ansDigit);
-      if (newCarry > 0) {
+      if (newCarry > 0 && c > 0) {
         setCarryDigit(ws, c - 1, newCarry);
         speech(
           ws,
@@ -260,7 +264,7 @@ function renderAddTryIt(ws) {
 
 function updateTryPromptAdd() {
   const { data, col } = tryData;
-  const carry = col < data.numCols - 1 ? data.carries[col + 1] : 0;
+  const carry = data.carries[col] || 0;
   const ad = data.aDigits[col],
     bd = data.bDigits[col];
   const colName =
@@ -329,13 +333,11 @@ function renderSubDemo(ws, a, b) {
   const currentA = [...data.aDigits];
 
   for (let c = cols - 1; c >= 0; c--) {
-    const origA = currentA[c],
-      bd = data.bDigits[c];
-    const needBorrow = data.borrows[c];
+    const bd = data.bDigits[c];
     const colLabel =
       c === cols - 1 ? "ones" : c === cols - 2 ? "tens" : "hundreds";
 
-    if (needBorrow) {
+    if (data.borrows[c]) {
       // Show borrow needed
       subs.push(() => {
         clearColHighlights(ws);
@@ -349,19 +351,30 @@ function renderSubDemo(ws, a, b) {
 
       // Show borrow animation
       subs.push(() => {
-        // Update display: modify the digits
+        // Cascade borrow through zeros
+        const origDigit = currentA[c];
         currentA[c] += 10;
-        currentA[c - 1] -= 1;
-        setBorrowDisplay(
-          ws,
-          c,
-          currentA[c],
-          currentA[c - 1],
-          data.aDigits[c - 1],
-        );
+        let j = c - 1;
+        while (j >= 0 && currentA[j] === 0) {
+          currentA[j] = 9;
+          setBorrowDisplayAt(ws, j, 9, data.aDigits[j]);
+          j--;
+        }
+        if (j >= 0) {
+          const origLeft = currentA[j];
+          currentA[j] -= 1;
+          setBorrowDisplayAt(ws, j, currentA[j], origLeft);
+        }
+        // Update the current column display
+        const aCell = ws.querySelector(`.a-cell[data-col="${c}"]`);
+        if (aCell) {
+          aCell.innerHTML = `<span class="crossed">${origDigit}</span><span class="borrowed-val">${currentA[c]}</span>`;
+          aCell.classList.add("borrowed");
+        }
+        const borrowSource = j >= 0 ? j : c - 1;
         speech(
           ws,
-          `Borrow! ${data.aDigits[c - 1]} becomes <strong style="color:#E74C3C">${currentA[c - 1]}</strong>, and ${data.aDigits[c]} becomes <strong style="color:#27AE60">${currentA[c]}</strong>.`,
+          `Borrow! ${origDigit} becomes <strong style="color:#27AE60">${currentA[c]}</strong>. We borrowed through to the ${borrowSource === 0 ? "hundreds" : "tens"} column.`,
         );
         soundClick();
       });
@@ -467,20 +480,31 @@ function updateTryPromptSub() {
 function doBorrow() {
   soundClick();
   const { data, col, currentA } = tryData;
+  const origDigit = currentA[col];
   currentA[col] += 10;
-  currentA[col - 1] -= 1;
 
   const ws = document.getElementById("learn-workspace");
-  setBorrowDisplay(
-    ws,
-    col,
-    currentA[col],
-    currentA[col - 1],
-    data.aDigits[col - 1],
-  );
+  // Cascade borrow through zeros
+  let j = col - 1;
+  while (j >= 0 && currentA[j] === 0) {
+    currentA[j] = 9;
+    setBorrowDisplayAt(ws, j, 9, data.aDigits[j]);
+    j--;
+  }
+  if (j >= 0) {
+    const origLeft = currentA[j];
+    currentA[j] -= 1;
+    setBorrowDisplayAt(ws, j, currentA[j], origLeft);
+  }
+  // Update current column display
+  const aCell = ws.querySelector(`.a-cell[data-col="${col}"]`);
+  if (aCell) {
+    aCell.innerHTML = `<span class="crossed">${origDigit}</span><span class="borrowed-val">${currentA[col]}</span>`;
+    aCell.classList.add("borrowed");
+  }
 
   document.getElementById("try-feedback").innerHTML =
-    `<span class="fb-correct">✅ Borrowed! ${data.aDigits[col]} becomes ${currentA[col]}!</span>`;
+    `<span class="fb-correct">✅ Borrowed! ${origDigit} becomes ${currentA[col]}!</span>`;
 
   tryData.phase = "calculate";
   updateTryPromptSub();
@@ -747,7 +771,7 @@ function checkMulTryAnswer(expected) {
 
 function checkTryAnswer() {
   if (!tryData) return;
-  if (tryData.op === "multiply") return; // handled separately
+  if (tryData.op === "multiply" || tryData.op === "divide") return; // handled separately
   const input = document.getElementById("try-input");
   const val = parseInt(input.value, 10);
   const fb = document.getElementById("try-feedback");
@@ -761,7 +785,7 @@ function checkTryAnswer() {
 
   let expected;
   if (op === "add") {
-    const carry = col < data.numCols - 1 ? data.carries[col + 1] : 0;
+    const carry = data.carries[col] || 0;
     expected = data.aDigits[col] + data.bDigits[col] + carry;
   } else {
     expected = (currentA || data.modifiedA)[col] - data.bDigits[col];
@@ -771,9 +795,10 @@ function checkTryAnswer() {
     const ansDigit = op === "add" ? data.ansDigits[col] : expected;
     setAnswerDigit(ws, col, ansDigit);
 
-    if (op === "add" && data.carries[col] > 0) {
-      setCarryDigit(ws, col - 1, data.carries[col]);
-      fb.innerHTML = `<span class="fb-correct">✅ ${expected}! Write ${ansDigit}, carry ${data.carries[col]}!</span>`;
+    const producedCarry = col > 0 ? data.carries[col - 1] || 0 : 0;
+    if (op === "add" && producedCarry > 0) {
+      setCarryDigit(ws, col - 1, producedCarry);
+      fb.innerHTML = `<span class="fb-correct">✅ ${expected}! Write ${ansDigit}, carry ${producedCarry}!</span>`;
     } else {
       fb.innerHTML = `<span class="fb-correct">✅ Correct! ${ansDigit}!</span>`;
     }
@@ -826,10 +851,10 @@ function checkTryAnswer() {
   } else {
     soundWrong();
     if (op === "add") {
-      const carry = col < data.numCols - 1 ? data.carries[col + 1] : 0;
+      const carryHint = data.carries[col] || 0;
       const hint =
-        carry > 0
-          ? `Hint: ${data.aDigits[col]} + ${data.bDigits[col]} + ${carry} (carry) = ?`
+        carryHint > 0
+          ? `Hint: ${data.aDigits[col]} + ${data.bDigits[col]} + ${carryHint} (carry) = ?`
           : `Hint: ${data.aDigits[col]} + ${data.bDigits[col]} = ?`;
       fb.innerHTML = `<span class="fb-wrong">Not quite! ${hint}</span>`;
     } else {
@@ -850,6 +875,8 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault();
     if (tryData && tryData.op === "multiply") {
       checkMulTryAnswer(tryData.expected);
+    } else if (tryData && tryData.op === "divide") {
+      checkDivTryAnswer(tryData.expected, tryData.a, tryData.b);
     } else {
       checkTryAnswer();
     }
@@ -873,6 +900,10 @@ function renderSummary(ws, op) {
     multiply: {
       title: "Grouping in Multiplication",
       tip: "Break big numbers into tens and ones to make it easy!",
+    },
+    divide: {
+      title: "Sharing in Division",
+      tip: "Division is sharing equally! Think: how many groups of the divisor fit inside the number?",
     },
   };
   const m = messages[op];
@@ -1038,6 +1069,14 @@ function setBorrowDisplay(ws, col, newVal, newLeft, origLeft) {
   }
 }
 
+function setBorrowDisplayAt(ws, col, newVal, origVal) {
+  const cell = ws.querySelector(`.a-cell[data-col="${col}"]`);
+  if (cell) {
+    cell.innerHTML = `<span class="crossed">${origVal}</span><span class="borrowed-val">${newVal}</span>`;
+    cell.classList.add("borrowed");
+  }
+}
+
 function speech(ws, html) {
   const el =
     ws.querySelector("#demo-speech") || ws.querySelector(".speech-bubble");
@@ -1064,4 +1103,579 @@ function generateSubProblem() {
     b = 10 + Math.floor(Math.random() * (a - 11)); // ensure b < a
   } while (a % 10 >= b % 10); // ensure ones borrow needed
   return { a, b };
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Times Tables – Learn & Quiz (1–20)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// ─── State ──────────────────────────────────────────────────────────────────
+let currentTable = null;
+let tableQuizQuestions = [];
+let tableQuizIdx = 0;
+let tableQuizScore = 0;
+let tableQuizAttempts = 0; // tracks wrong attempts on current question
+
+// Colour palette for table numbers
+const TABLE_COLORS = [
+  "#E74C3C",
+  "#E67E22",
+  "#F1C40F",
+  "#2ECC71",
+  "#1ABC9C",
+  "#3498DB",
+  "#2980B9",
+  "#9B59B6",
+  "#8E44AD",
+  "#E91E63",
+  "#FF5722",
+  "#FF9800",
+  "#CDDC39",
+  "#4CAF50",
+  "#009688",
+  "#00BCD4",
+  "#03A9F4",
+  "#673AB7",
+  "#795548",
+  "#607D8B",
+];
+
+// ─── Build grid on load ─────────────────────────────────────────────────────
+(function initTablesGrid() {
+  const grid = document.getElementById("tables-grid");
+  if (!grid) return;
+  for (let i = 1; i <= 20; i++) {
+    const btn = document.createElement("button");
+    btn.className = "btn-table";
+    btn.textContent = i;
+    btn.style.background = TABLE_COLORS[i - 1];
+    btn.onclick = () => selectTable(i);
+    grid.appendChild(btn);
+  }
+})();
+
+// ─── Navigation ─────────────────────────────────────────────────────────────
+function openTablesMenu() {
+  soundClick();
+  showScreen("tables-menu");
+}
+
+function selectTable(n) {
+  soundClick();
+  currentTable = n;
+  renderTable(n);
+  showScreen("tables");
+}
+
+// ─── Render full table ──────────────────────────────────────────────────────
+function renderTable(n) {
+  document.getElementById("table-title").textContent = `× ${n} Table`;
+  const display = document.getElementById("table-display");
+  display.innerHTML = "";
+  display.classList.remove("hidden");
+
+  const color = TABLE_COLORS[n - 1];
+
+  for (let i = 1; i <= 10; i++) {
+    const row = document.createElement("div");
+    row.className = "table-row fade-row";
+    row.style.animationDelay = `${(i - 1) * 0.06}s`;
+    row.innerHTML = `
+      <span class="table-n" style="color:${color}">${n}</span>
+      <span class="table-x">×</span>
+      <span class="table-m">${i}</span>
+      <span class="table-eq">=</span>
+      <span class="table-ans" style="color:${color}">${n * i}</span>
+    `;
+    display.appendChild(row);
+  }
+
+  // Reset UI
+  document.getElementById("table-actions").classList.remove("hidden");
+  document.getElementById("btn-test-me").classList.remove("hidden");
+  document.getElementById("btn-back-tables").classList.remove("hidden");
+  const qa = document.getElementById("table-quiz-area");
+  qa.classList.add("hidden");
+  qa.innerHTML = "";
+}
+
+// ─── Quiz mode ──────────────────────────────────────────────────────────────
+function startTableQuiz() {
+  soundClick();
+  const n = currentTable;
+
+  // Build & shuffle questions
+  tableQuizQuestions = [];
+  for (let i = 1; i <= 10; i++) {
+    tableQuizQuestions.push({ m: i, answer: n * i });
+  }
+  for (let i = tableQuizQuestions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [tableQuizQuestions[i], tableQuizQuestions[j]] = [
+      tableQuizQuestions[j],
+      tableQuizQuestions[i],
+    ];
+  }
+
+  tableQuizIdx = 0;
+  tableQuizScore = 0;
+
+  // Hide table, show quiz
+  document.getElementById("table-display").classList.add("hidden");
+  document.getElementById("table-actions").classList.add("hidden");
+  document.getElementById("btn-back-tables").classList.add("hidden");
+
+  const qa = document.getElementById("table-quiz-area");
+  qa.classList.remove("hidden");
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion() {
+  const qa = document.getElementById("table-quiz-area");
+  const q = tableQuizQuestions[tableQuizIdx];
+  const n = currentTable;
+  const color = TABLE_COLORS[n - 1];
+  tableQuizAttempts = 0;
+
+  qa.innerHTML = `
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-track">
+        <div class="quiz-progress-fill" style="width:${(tableQuizIdx / tableQuizQuestions.length) * 100}%; background:${color}"></div>
+      </div>
+      <span class="quiz-progress-text">${tableQuizIdx + 1} / ${tableQuizQuestions.length}</span>
+    </div>
+    <div class="quiz-score-row">Score: ${tableQuizScore}</div>
+    <div class="quiz-problem-card">
+      <span class="quiz-n" style="color:${color}">${n}</span>
+      <span class="quiz-x">×</span>
+      <span class="quiz-m">${q.m}</span>
+      <span class="quiz-eq">=</span>
+      <input type="number" class="quiz-input" id="quiz-ans-input"
+        inputmode="numeric" pattern="[0-9]*" autocomplete="off" />
+    </div>
+    <button class="btn btn-check quiz-check-btn" id="quiz-check-btn" onclick="checkTableQuizAnswer()">Check</button>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+  `;
+
+  const inp = document.getElementById("quiz-ans-input");
+  setTimeout(() => inp.focus(), 120);
+  inp.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") checkTableQuizAnswer();
+  });
+}
+
+function checkTableQuizAnswer() {
+  const inp = document.getElementById("quiz-ans-input");
+  const fb = document.getElementById("quiz-feedback");
+  const val = parseInt(inp.value, 10);
+  const q = tableQuizQuestions[tableQuizIdx];
+
+  if (isNaN(val) || inp.value.trim() === "") return;
+
+  if (val === q.answer) {
+    // Correct
+    if (tableQuizAttempts === 0) tableQuizScore++; // only score on first attempt
+    inp.disabled = true;
+    document.getElementById("quiz-check-btn").disabled = true;
+    soundCorrect();
+    fb.innerHTML = `<span class="fb-correct">✅ ${currentTable} × ${q.m} = ${q.answer}</span>`;
+
+    setTimeout(() => {
+      tableQuizIdx++;
+      if (tableQuizIdx < tableQuizQuestions.length) {
+        renderQuizQuestion();
+      } else {
+        showTableQuizResults();
+      }
+    }, 1000);
+  } else {
+    // Wrong
+    tableQuizAttempts++;
+    soundWrong();
+    inp.value = "";
+    inp.classList.add("shake");
+    setTimeout(() => inp.classList.remove("shake"), 400);
+
+    if (tableQuizAttempts >= 2) {
+      // Show answer after 2 wrong attempts
+      fb.innerHTML = `<span class="fb-wrong">The answer is <strong>${q.answer}</strong></span>`;
+      inp.disabled = true;
+      document.getElementById("quiz-check-btn").disabled = true;
+      setTimeout(() => {
+        tableQuizIdx++;
+        if (tableQuizIdx < tableQuizQuestions.length) {
+          renderQuizQuestion();
+        } else {
+          showTableQuizResults();
+        }
+      }, 1500);
+    } else {
+      fb.innerHTML = `<span class="fb-wrong">❌ Try again!</span>`;
+      setTimeout(() => inp.focus(), 50);
+    }
+  }
+}
+
+function showTableQuizResults() {
+  const qa = document.getElementById("table-quiz-area");
+  const total = tableQuizQuestions.length;
+  const pct = Math.round((tableQuizScore / total) * 100);
+  const color = TABLE_COLORS[currentTable - 1];
+
+  let msg, stars;
+  if (pct === 100) {
+    msg = "Perfect! You know this table! 🏆";
+    stars = "⭐⭐⭐";
+    soundPerfect();
+    launchConfetti(100);
+  } else if (pct >= 80) {
+    msg = "Great job! Almost perfect!";
+    stars = "⭐⭐";
+    soundCorrect();
+    launchConfetti(40);
+  } else if (pct >= 50) {
+    msg = "Good effort! Keep practicing!";
+    stars = "⭐";
+    soundCorrect();
+  } else {
+    msg = "Keep trying! Practice makes perfect!";
+    stars = "";
+  }
+
+  qa.innerHTML = `
+    <div class="quiz-results">
+      <div class="quiz-stars">${stars}</div>
+      <h2 class="quiz-score-big" style="color:${color}">${tableQuizScore} / ${total}</h2>
+      <p class="quiz-msg">${msg}</p>
+      <div class="quiz-result-btns">
+        <button class="btn btn-quiz" onclick="startTableQuiz()">🔄 Try Again</button>
+        <button class="btn btn-study" onclick="selectTable(currentTable)">📖 Study Table</button>
+      </div>
+    </div>
+  `;
+
+  // Show back button again
+  document.getElementById("btn-back-tables").classList.remove("hidden");
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DIVISION LESSON – Sharing & Splitting
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function buildDivisionLesson() {
+  return [
+    { render: (ws) => renderDivIntro(ws) },
+    { render: (ws) => renderDivSharingDemo(ws, 12, 3) },
+    { render: (ws) => renderDivSharingDemo(ws, 20, 4) },
+    { render: (ws) => renderDivGroupingDemo(ws, 15, 5) },
+    { render: (ws) => renderDivConnectionDemo(ws) },
+    { render: (ws) => renderDivTryIt(ws) },
+    { render: (ws) => renderDivTryIt(ws) },
+    { render: (ws) => renderSummary(ws, "divide") },
+  ];
+}
+
+// ─── Intro ──────────────────────────────────────────────────────────────────
+function renderDivIntro(ws) {
+  ws.innerHTML = `
+    <div class="learn-intro">
+      <div class="learn-mascot">🍪</div>
+      <h2 class="learn-title" style="color:${LEARN_COLORS.divide}">What is Division?</h2>
+      <div class="learn-card">
+        <p>Division means <strong>sharing equally</strong>!</p>
+        <p>Imagine you have <strong>12 cookies</strong> 🍪 and <strong>3 friends</strong>. How many cookies does each friend get?</p>
+        <div class="learn-visual-box">
+          <div class="visual-example">
+            <span class="digit-box" style="font-size:1.4rem">12</span>
+            <span>÷</span>
+            <span class="digit-box">3</span>
+            <span>=</span>
+            <span class="digit-box big" style="background:#FFF3E0;border-color:#E67E22;color:#E67E22">4</span>
+          </div>
+          <p class="visual-caption">12 cookies shared among 3 friends = <strong style="color:#E67E22">4 cookies each!</strong></p>
+        </div>
+        <p style="margin-top:10px">Division is the <strong>opposite of multiplication</strong>:</p>
+        <div class="div-connection-box">
+          <span>3 × 4 = 12</span> ↔ <span>12 ÷ 3 = 4</span>
+        </div>
+      </div>
+      <p class="learn-cta">Let's see how sharing works! Click <strong>Next</strong> →</p>
+    </div>`;
+}
+
+// ─── Sharing Demo (visual distribution) ─────────────────────────────────────
+function renderDivSharingDemo(ws, total, groups) {
+  const each = total / groups;
+  const ITEM = "🍪";
+  const PLATE_COLORS = [
+    "#E74C3C",
+    "#3498DB",
+    "#27AE60",
+    "#F39C12",
+    "#8E44AD",
+    "#1ABC9C",
+  ];
+
+  ws.innerHTML = `
+    <h2 class="learn-step-title" style="color:${LEARN_COLORS.divide}">Share: ${total} ÷ ${groups}</h2>
+    <div class="div-pile" id="div-pile"></div>
+    <div class="div-plates" id="div-plates"></div>
+    <div class="groups-equation" id="div-equation"></div>
+    <div class="speech-bubble" id="demo-speech">We have ${total} ${ITEM} to share equally among ${groups} plates!</div>
+    <div class="tap-prompt">👆 Tap to continue</div>`;
+
+  const pile = document.getElementById("div-pile");
+  const plates = document.getElementById("div-plates");
+
+  // Build pile of items
+  let pileItems = "";
+  for (let i = 0; i < total; i++) {
+    pileItems += `<span class="pile-item" id="pile-${i}">${ITEM}</span>`;
+  }
+  pile.innerHTML = `<div class="pile-label">Pile: ${total} ${ITEM}</div><div class="pile-items">${pileItems}</div>`;
+
+  // Build empty plates
+  let platesHTML = "";
+  for (let g = 0; g < groups; g++) {
+    platesHTML += `<div class="div-plate" id="plate-${g}" style="border-color:${PLATE_COLORS[g % PLATE_COLORS.length]}">
+      <div class="plate-items" id="plate-items-${g}"></div>
+      <div class="plate-count" style="color:${PLATE_COLORS[g % PLATE_COLORS.length]}">0</div>
+    </div>`;
+  }
+  plates.innerHTML = platesHTML;
+
+  const subs = [];
+  let distributed = 0;
+
+  // Distribute one round at a time (one to each plate)
+  for (let round = 0; round < each; round++) {
+    subs.push(() => {
+      for (let g = 0; g < groups; g++) {
+        const idx = round * groups + g;
+        const pileEl = document.getElementById(`pile-${idx}`);
+        if (pileEl) pileEl.classList.add("pile-given");
+
+        const plateItems = document.getElementById(`plate-items-${g}`);
+        plateItems.innerHTML += `<span class="plate-item appear-item">${ITEM}</span>`;
+        const countEl = document
+          .getElementById(`plate-${g}`)
+          .querySelector(".plate-count");
+        countEl.textContent = round + 1;
+      }
+      distributed = (round + 1) * groups;
+      const remaining = total - distributed;
+
+      pile.querySelector(".pile-label").textContent =
+        remaining > 0 ? `Pile: ${remaining} left` : "Pile: empty!";
+
+      speech(
+        ws,
+        `Round ${round + 1}: Give 1 to each plate. Each plate now has <strong>${round + 1}</strong>.`,
+      );
+      soundClick();
+    });
+  }
+
+  // Final celebration
+  subs.push(() => {
+    document.getElementById("div-equation").innerHTML =
+      `<span class="eq-final" style="color:${LEARN_COLORS.divide}">${total} ÷ ${groups} = <strong>${each}</strong> 🎉</span>`;
+    speech(
+      ws,
+      `🎉 ${total} shared equally among ${groups} = <strong>${each} each</strong>! That's division!`,
+    );
+    soundCorrect();
+    launchConfetti(30);
+  });
+
+  setupDemo(ws, subs);
+}
+
+// ─── Grouping Demo (how many groups?) ───────────────────────────────────────
+function renderDivGroupingDemo(ws, total, perGroup) {
+  const numGroups = total / perGroup;
+  const ITEM = "⭐";
+  const GROUP_COLORS = [
+    "#E74C3C",
+    "#3498DB",
+    "#27AE60",
+    "#F39C12",
+    "#8E44AD",
+    "#1ABC9C",
+  ];
+
+  ws.innerHTML = `
+    <h2 class="learn-step-title" style="color:${LEARN_COLORS.divide}">Group: ${total} ÷ ${perGroup}</h2>
+    <div class="div-pile" id="div-pile"></div>
+    <div class="groups-container" id="div-groups-area"></div>
+    <div class="groups-equation" id="div-equation"></div>
+    <div class="speech-bubble" id="demo-speech">${total} ÷ ${perGroup} also means: how many groups of ${perGroup} can we make?</div>
+    <div class="tap-prompt">👆 Tap to continue</div>`;
+
+  const pile = document.getElementById("div-pile");
+  let pileItems = "";
+  for (let i = 0; i < total; i++) {
+    pileItems += `<span class="pile-item" id="gpile-${i}">${ITEM}</span>`;
+  }
+  pile.innerHTML = `<div class="pile-label">${total} ${ITEM} — make groups of ${perGroup}</div><div class="pile-items">${pileItems}</div>`;
+
+  const area = document.getElementById("div-groups-area");
+  const subs = [];
+
+  for (let g = 0; g < numGroups; g++) {
+    subs.push(() => {
+      // Mark items as used
+      for (let d = 0; d < perGroup; d++) {
+        const idx = g * perGroup + d;
+        const el = document.getElementById(`gpile-${idx}`);
+        if (el) el.classList.add("pile-given");
+      }
+
+      const box = document.createElement("div");
+      box.className = "group-box appear";
+      box.style.borderColor = GROUP_COLORS[g % GROUP_COLORS.length];
+      let dots = "";
+      for (let d = 0; d < perGroup; d++) {
+        dots += `<span class="dot-circle" style="background:${GROUP_COLORS[g % GROUP_COLORS.length]}">${ITEM}</span>`;
+      }
+      box.innerHTML = `<div class="group-dots">${dots}</div><div class="group-count">${perGroup}</div>`;
+      area.appendChild(box);
+
+      const remaining = total - (g + 1) * perGroup;
+      pile.querySelector(".pile-label").textContent =
+        remaining > 0 ? `${remaining} left — keep grouping!` : "All grouped!";
+
+      speech(
+        ws,
+        `Group ${g + 1}! That's ${g + 1} group${g > 0 ? "s" : ""} of ${perGroup} so far.`,
+      );
+      soundClick();
+    });
+  }
+
+  subs.push(() => {
+    document.getElementById("div-equation").innerHTML =
+      `<span class="eq-final" style="color:${LEARN_COLORS.divide}">${total} ÷ ${perGroup} = <strong>${numGroups}</strong> groups! 🎉</span>`;
+    speech(
+      ws,
+      `🎉 We made <strong>${numGroups} groups</strong> of ${perGroup}! So ${total} ÷ ${perGroup} = ${numGroups}!`,
+    );
+    soundCorrect();
+    launchConfetti(30);
+  });
+
+  setupDemo(ws, subs);
+}
+
+// ─── Division ↔ Multiplication Connection ───────────────────────────────────
+function renderDivConnectionDemo(ws) {
+  ws.innerHTML = `
+    <div class="learn-intro">
+      <div class="learn-mascot">💡</div>
+      <h2 class="learn-title" style="color:${LEARN_COLORS.divide}">The Secret Trick!</h2>
+      <div class="learn-card">
+        <p>Division and multiplication are <strong>best friends</strong>! They're opposites!</p>
+        <div class="learn-visual-box">
+          <div class="div-trick-grid">
+            <div class="trick-row">
+              <span class="trick-mul">4 × 5 = 20</span>
+              <span class="trick-arrow">↔</span>
+              <span class="trick-div">20 ÷ 5 = 4</span>
+            </div>
+            <div class="trick-row">
+              <span class="trick-mul">3 × 7 = 21</span>
+              <span class="trick-arrow">↔</span>
+              <span class="trick-div">21 ÷ 7 = 3</span>
+            </div>
+            <div class="trick-row">
+              <span class="trick-mul">6 × 8 = 48</span>
+              <span class="trick-arrow">↔</span>
+              <span class="trick-div">48 ÷ 8 = 6</span>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:12px"><strong>Trick:</strong> When you see ${"`"}20 ÷ 5 = ?${"`"}, think:</p>
+        <div class="div-think-bubble">
+          🤔 "5 × <strong>what</strong> = 20?"<br>
+          5 × <strong style="color:#E67E22">4</strong> = 20 → answer is <strong style="color:#E67E22">4</strong>!
+        </div>
+        <p style="margin-top:8px">If you know your times tables, division is easy! 🏆</p>
+      </div>
+      <p class="learn-cta">Now try it yourself! Click <strong>Next</strong> →</p>
+    </div>`;
+}
+
+// ─── Division Try-It ────────────────────────────────────────────────────────
+function renderDivTryIt(ws) {
+  // Generate a clean division problem
+  const divisors = [2, 3, 4, 5, 6, 7, 8, 9];
+  const b = divisors[Math.floor(Math.random() * divisors.length)];
+  const quotient = 2 + Math.floor(Math.random() * 9); // 2-10
+  const a = b * quotient;
+  const expected = quotient;
+
+  learnCanAdvance = false;
+
+  // Build visual items to help
+  const ITEM = "🟡";
+  let pileHTML = "";
+  for (let i = 0; i < a; i++) {
+    pileHTML += `<span class="pile-item mini-pile">${ITEM}</span>`;
+  }
+
+  ws.innerHTML = `
+    <h2 class="learn-step-title" style="color:${LEARN_COLORS.divide}">🎯 Your Turn: ${a} ÷ ${b}</h2>
+    <div class="div-try-visual">
+      <div class="div-try-pile">${pileHTML}</div>
+      <p class="div-try-hint-text">Share ${a} items into ${b} equal groups. How many in each?</p>
+    </div>
+    <div class="div-think-bubble" style="margin:10px 0">
+      💡 Think: ${b} × <strong>?</strong> = ${a}
+    </div>
+    <div class="try-input-row">
+      <input type="number" id="try-input" class="try-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="?" />
+      <button class="btn try-check-btn" style="background:${LEARN_COLORS.divide}" onclick="checkDivTryAnswer(${expected}, ${a}, ${b})">Check ✓</button>
+    </div>
+    <div class="try-feedback" id="try-feedback"></div>`;
+
+  tryData = { op: "divide", expected, a, b, attempts: 0 };
+  setTimeout(() => document.getElementById("try-input").focus(), 100);
+}
+
+function checkDivTryAnswer(expected, a, b) {
+  const input = document.getElementById("try-input");
+  const fb = document.getElementById("try-feedback");
+  const val = parseInt(input.value, 10);
+
+  if (isNaN(val) || input.value.trim() === "") {
+    input.focus();
+    return;
+  }
+
+  if (val === expected) {
+    fb.innerHTML = `<span class="fb-correct">🎉 Correct! ${a} ÷ ${b} = ${expected}! Because ${b} × ${expected} = ${a}!</span>`;
+    soundCorrect();
+    launchConfetti(40);
+    learnCanAdvance = true;
+    updateLearnUI();
+    input.disabled = true;
+  } else {
+    tryData.attempts++;
+    if (tryData.attempts >= 3) {
+      fb.innerHTML = `<span class="fb-wrong">The answer is <strong>${expected}</strong>. ${b} × ${expected} = ${a}, so ${a} ÷ ${b} = ${expected}!</span>`;
+      soundWrong();
+      learnCanAdvance = true;
+      updateLearnUI();
+      input.disabled = true;
+    } else {
+      const hint =
+        tryData.attempts === 1
+          ? `Think: ${b} × ? = ${a}`
+          : `Almost! The answer is close to ${expected}.`;
+      fb.innerHTML = `<span class="fb-wrong">Not quite! ${hint}</span>`;
+      soundWrong();
+      input.value = "";
+      input.focus();
+    }
+  }
 }

@@ -208,7 +208,9 @@ function showScreen(name) {
 }
 
 function opSym(op) {
-  return { add: "+", subtract: "\u2212", multiply: "\u00D7" }[op];
+  return { add: "+", subtract: "\u2212", multiply: "\u00D7", divide: "\u00F7" }[
+    op
+  ];
 }
 
 function opLabel(op) {
@@ -216,6 +218,7 @@ function opLabel(op) {
     add: "Addition",
     subtract: "Subtraction",
     multiply: "Multiplication",
+    divide: "Division",
   }[op];
 }
 
@@ -235,12 +238,23 @@ function genNumbers() {
   let a = randInt(lo, hi),
     b = randInt(lo, hi);
   if (operation === "subtract" && a < b) [a, b] = [b, a];
+  if (operation === "divide") {
+    // Generate clean division: pick divisor & quotient, then dividend = divisor × quotient
+    const dLo = digitChoice === 1 ? 1 : digitChoice === 2 ? 2 : 2;
+    const dHi = digitChoice === 1 ? 9 : digitChoice === 2 ? 12 : 20;
+    const qLo = digitChoice === 1 ? 1 : digitChoice === 2 ? 2 : 10;
+    const qHi = digitChoice === 1 ? 9 : digitChoice === 2 ? 20 : 50;
+    b = randInt(dLo, dHi); // divisor
+    const q = randInt(qLo, qHi); // quotient
+    a = b * q; // dividend = clean result
+  }
   return [a, b];
 }
 
 function compute(a, b, op) {
   if (op === "add") return a + b;
   if (op === "subtract") return a - b;
+  if (op === "divide") return a / b;
   return a * b;
 }
 
@@ -315,13 +329,22 @@ function getHint(a, b, op, att) {
     return `The answer is between ${ans - 2} and ${ans + 2}.`;
   }
   // multiply
-  if (att === 1)
-    return `Multiply means repeated addition! ${a} × ${b} = ${a} added ${b} times.`;
-  if (att === 2) {
-    const part = b > 1 ? a * (b - 1) : 0;
-    return `${a} × ${b - 1} = ${part}. Now add one more ${a}.`;
+  if (op === "multiply") {
+    if (att === 1)
+      return `Multiply means repeated addition! ${a} × ${b} = ${a} added ${b} times.`;
+    if (att === 2) {
+      const part = b > 1 ? a * (b - 1) : 0;
+      return `${a} × ${b - 1} = ${part}. Now add one more ${a}.`;
+    }
+    return `The answer is between ${ans - 3} and ${ans + 3}.`;
   }
-  return `The answer is between ${ans - 3} and ${ans + 3}.`;
+  // divide
+  if (att === 1)
+    return `Division means sharing! ${a} ÷ ${b} = how many groups of ${b} fit in ${a}?`;
+  if (att === 2) {
+    return `Think: ${b} × ? = ${a}. What number times ${b} gives ${a}?`;
+  }
+  return `The answer is between ${ans - 2} and ${ans + 2}.`;
 }
 
 // ─── Navigation callbacks ───────────────────────────────────────────────────
@@ -344,6 +367,16 @@ function quitRound() {
 function selectAge(age) {
   soundClick();
   playerAge = age;
+  // Show/hide division buttons based on age
+  const divBtn = document.getElementById("btn-divide");
+  const divLearnBtn = document.getElementById("btn-learn-divide");
+  if (age > 5) {
+    if (divBtn) divBtn.classList.remove("hidden");
+    if (divLearnBtn) divLearnBtn.classList.remove("hidden");
+  } else {
+    if (divBtn) divBtn.classList.add("hidden");
+    if (divLearnBtn) divLearnBtn.classList.add("hidden");
+  }
   showScreen("mode");
 }
 
@@ -358,6 +391,18 @@ function selectOperation(op) {
     lvl3Btn.classList.add("hidden");
   } else {
     lvl3Btn.classList.remove("hidden");
+  }
+  // For division, adjust level labels
+  const lvl1Btn = document.getElementById("lvl1");
+  const lvl2Btn = document.getElementById("lvl2");
+  if (op === "divide") {
+    lvl1Btn.textContent = "Easy  (÷ 1–9)";
+    lvl2Btn.textContent = "Medium  (÷ 2–12)";
+    lvl3Btn.textContent = "Hard  (÷ 2–20)";
+  } else {
+    lvl1Btn.textContent = "Single digit  (1 – 9)";
+    lvl2Btn.textContent = "Double digit  (10 – 99)";
+    lvl3Btn.textContent = "Triple digit  (100 – 999)";
   }
   showScreen("level");
 }

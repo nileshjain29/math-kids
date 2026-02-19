@@ -64,6 +64,13 @@
           <button class="btn btn-mul" onclick="selectOperation('multiply')">
             &times;&ensp;Multiplication
           </button>
+          <button
+            class="btn btn-div hidden"
+            id="btn-divide"
+            onclick="selectOperation('divide')"
+          >
+            &divide;&ensp;Division
+          </button>
         </div>
         <button class="btn btn-back" onclick="goTo('mode')">Back</button>
       </div>
@@ -211,8 +218,54 @@
           <button class="btn btn-mul" onclick="startLearnMode('multiply')">
             &times;&ensp;Groups &amp; Tricks&ensp;(Multiplication)
           </button>
+          <button
+            class="btn btn-div hidden"
+            id="btn-learn-divide"
+            onclick="startLearnMode('divide')"
+          >
+            &divide;&ensp;Sharing &amp; Splitting&ensp;(Division)
+          </button>
+          <button class="btn btn-tables" onclick="openTablesMenu()">
+            🔢&ensp;Times Tables&ensp;(1–20)
+          </button>
         </div>
         <button class="btn btn-back" onclick="goTo('mode')">Back</button>
+      </div>
+
+      <!-- Tables Menu: Pick a Table -->
+      <div id="screen-tables-menu" class="screen">
+        <h1 class="title">Times Tables</h1>
+        <p class="subtitle">Pick a table to learn</p>
+        <div class="tables-grid" id="tables-grid"></div>
+        <button class="btn btn-back" onclick="goTo('learn-menu')">Back</button>
+      </div>
+
+      <!-- Table View + Quiz -->
+      <div id="screen-tables" class="screen">
+        <div class="learn-top-bar">
+          <span id="table-title">× 5 Table</span>
+          <button class="btn-close" onclick="goTo('tables-menu')" title="Back">
+            &times;
+          </button>
+        </div>
+        <div id="table-display" class="table-display"></div>
+        <div id="table-quiz-area" class="table-quiz-area hidden"></div>
+        <div class="table-actions" id="table-actions">
+          <button
+            class="btn btn-quiz"
+            id="btn-test-me"
+            onclick="startTableQuiz()"
+          >
+            🧠 Test Me!
+          </button>
+        </div>
+        <button
+          class="btn btn-back"
+          id="btn-back-tables"
+          onclick="goTo('tables-menu')"
+        >
+          Back
+        </button>
       </div>
 
       <!-- Learn Workspace -->
